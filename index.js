@@ -4,7 +4,7 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs').promises;
 
-//import File
+// import File
 // const bicycles = require('./data/data.json');
 // console.log = (bicycles);
 
@@ -28,8 +28,8 @@ const server = http.createServer(async(req, res)=>{
     //Overview Page
     else if(pathname === '/bicycle' && id >=0 && id <= 5){
         const html = await fs.readFile('./views/overview.html', 'utf-8');
-        const bicycle = bicycles.find((b) => b.id === id);
-        console.log = (bicycle);
+        // const bicycle = bicycles.find((b) => b.id === id);
+        // console.log = (bicycles);
 
         res.writeHead(200, {'content-type':'text/html'});
         res.end(html);
