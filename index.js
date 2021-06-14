@@ -4,9 +4,11 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs').promises;
 
+const bicycles = require('./data/data.json');
+
 // import File
-// const bicycles = require('./data/data.json');
-// console.log = (bicycles);
+// const one = require('./data/data.json');
+// console.log = (one);
 
 // server
 const server = http.createServer(async(req, res)=>{
@@ -21,15 +23,31 @@ const server = http.createServer(async(req, res)=>{
     //routes
     //homepage
     if(pathname === '/'){
-        const html = await fs.readFile('./views/bicycles.html','utf-8');
+        let html = await fs.readFile('./views/bicycles.html','utf-8');
+        const eachBicycle = await fs.readFile('./views/partials/bicycle.html','utf-8');
+        
+        let allTheBicycles = '';
+        for (let i = 0; i < 6; i++){
+            allTheBicycles += eachBicycle;
+        }
+        html = html.replace(/<%AllTheBicycles%>/g, allTheBicycles);
         res.writeHead(200, {'content-type':'text/html'});
         res.end(html);
     }
     //Overview Page
     else if(pathname === '/bicycle' && id >=0 && id <= 5){
-        const html = await fs.readFile('./views/overview.html', 'utf-8');
-        // const bicycle = bicycles.find((b) => b.id === id);
-        // console.log = (bicycles);
+        let html = await fs.readFile('./views/overview.html', 'utf-8');
+        const bicycle = bicycles.find((b) => b.id === id);
+
+        html = html.replace(/<%IMAGE%>/g, bicycle.image);
+        html = html.replace(/<%NAME%>/g, bicycle.name);
+        
+        let price = bicycle.originalPrice;
+        if(bicycle.hasDiscount){
+            price = (price * (100 - bicycle.discount)) / 100;
+        }
+        
+        html = html.replace(/<%NEWPRICE%>/g, `$${price}`);
 
         res.writeHead(200, {'content-type':'text/html'});
         res.end(html);
@@ -56,8 +74,6 @@ const server = http.createServer(async(req, res)=>{
     }
 
     // console.log('server is running...');
-    // res.writeHead(200,{'content-type':'text/html'});
-    // res.end('<h1>hello Rohan, Whats up? DDos</h1>')
 });
 
 server.listen(3000);
