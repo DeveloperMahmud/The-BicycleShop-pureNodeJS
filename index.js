@@ -5,6 +5,7 @@ const url = require('url');
 const fs = require('fs').promises;
 
 const bicycles = require('./data/data.json');
+// console.log(bicycles[index]);
 
 // import File
 // const one = require('./data/data.json');
@@ -28,7 +29,7 @@ const server = http.createServer(async(req, res)=>{
         
         let allTheBicycles = '';
         for (let i = 0; i < 6; i++){
-            allTheBicycles += eachBicycle;
+            allTheBicycles += replaceTemplate(eachBicycle, bicycles[i]);
         }
         html = html.replace(/<%AllTheBicycles%>/g, allTheBicycles);
         res.writeHead(200, {'content-type':'text/html'});
@@ -39,15 +40,7 @@ const server = http.createServer(async(req, res)=>{
         let html = await fs.readFile('./views/overview.html', 'utf-8');
         const bicycle = bicycles.find((b) => b.id === id);
 
-        html = html.replace(/<%IMAGE%>/g, bicycle.image);
-        html = html.replace(/<%NAME%>/g, bicycle.name);
-        
-        let price = bicycle.originalPrice;
-        if(bicycle.hasDiscount){
-            price = (price * (100 - bicycle.discount)) / 100;
-        }
-        
-        html = html.replace(/<%NEWPRICE%>/g, `$${price}`);
+        html = replaceTemplate(html, bicycle);
 
         res.writeHead(200, {'content-type':'text/html'});
         res.end(html);
@@ -77,3 +70,29 @@ const server = http.createServer(async(req, res)=>{
 });
 
 server.listen(3000);
+
+function replaceTemplate(html, bicycle){
+    html = html.replace(/<%IMAGE%>/g, bicycle.image);
+    html = html.replace(/<%NAME%>/g, bicycle.name);
+        
+    let price = bicycle.originalPrice;
+    if(bicycle.hasDiscount){
+        price = (price * (100 - bicycle.discount)) / 100;
+    }
+        
+    html = html.replace(/<%NEWPRICE%>/g, `$${price}.00`);
+    html = html.replace(/<%OLDPRICE%>/g, `$${bicycle.originalPrice}`);
+    html = html.replace(/<%ID%>/g, bicycle.id);
+
+    if(bicycle.hasDiscount){
+        html = html.replace(/<%DISCOUNTRATE%>/g,`<div class="discount__rate"><p>${bicycle.discount}%Off</p></div>`); 
+    }else{
+        html = html.replace(/<%DISCOUNTRATE%>/g, ''); 
+    };
+
+    for(let i = 0; i < bicycle.star; i++){
+        html = html.replace (/<%STAR%>/,'checked');
+    }
+    html = html.replace(/<%STAR%>/g,'');
+    return html;
+}
